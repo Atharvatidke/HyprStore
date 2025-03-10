@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test</title>
+</head>
+<body>
+  <h1>API Test</h1>
+  
+  <button id="testAuth">Test Authentication</button>
+  <button id="addToCart">Add To Cart (Manual)</button>
+  
+  <div id="output" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+  
+  <script>
+    // Get token from cookie
+    function getToken() {
+      const token = document.cookie.split('; ')
+        .find(row => row.startsWith('token='))?.split('=')[1];
+      return token;
+    }
+    
+    // Output results
+    function showOutput(message) {
+      document.getElementById('output').innerText += message + '\n';
+    }
+    
+    // Test authentication
+    document.getElementById('testAuth').addEventListener('click', async () => {
+      try {
+        const token = getToken();
+        showOutput(`Token: ${token ? token.substring(0, 10) + '...' : 'No token'}`);
+        
+        if (!token) {
+          showOutput('No token found! Please login first.');
+          return;
+        }
+        
+        const response = await fetch('http://localhost:5000/api/auth/test', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await response.json();
+        showOutput(`Response: ${JSON.stringify(data, null, 2)}`);
+      } catch (err) {
+        showOutput(`Error: ${err.message}`);
+      }
+    });
+    
+    // Add to cart manually
+    document.getElementById('addToCart').addEventListener('click', async () => {
+      try {
+        const token = getToken();
+        showOutput(`Token: ${token ? token.substring(0, 10) + '...' : 'No token'}`);
+        
+        if (!token) {
+          showOutput('No token found! Please login first.');
+          return;
+        }
+        
+        // Replace with an actual product ID from your database
+        const productId = prompt('Enter product ID:');
+        const quantity = parseInt(prompt('Enter quantity:', '1'));
+        
+        showOutput(`Trying to add: Product ${productId}, Quantity: ${quantity}`);
+        
+        const response = await fetch('http://localhost:5000/api/cart/add', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ productId, quantity })
+        });
+        
+        const data = await response.json();
+        showOutput(`Response: ${JSON.stringify(data, null, 2)}`);
+      } catch (err) {
+        showOutput(`Error: ${err.message}`);
+      }
+    });
+  </script>
+</body>
+</html>
